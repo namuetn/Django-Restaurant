@@ -1,12 +1,30 @@
 from django.shortcuts import render, redirect
 from accounts.forms import UserForm
 from accounts.models import User, UserProfile
-from django.contrib import messages
+from django.contrib import messages, auth
+from django.contrib.auth.decorators import login_required, user_passes_test
+from accounts.utils import detect_user
 from vendor.forms import VendorForm
+from django.core.exceptions import PermissionDenied
 
+# Retrict the vendor from accessing the customer page
+def check_role_vendor(user):
+    if user.role == 1:
+        return True
+    raise PermissionDenied
+    
+# Retrict the customer from accessing the vendor page
+def check_role_customer(user):
+    if user.role == 2:
+        return True
+    raise PermissionDenied
 
 def register_user(request):
-    if request.method == 'POST':
+    if request.user.is_authenticated:
+        messages.warning(request, 'You are already logged in!')
+
+        return redirect('dashboard')
+    elif request.method == 'POST':
         form = UserForm(request.POST)
         if form.is_valid():
             # -- start create user using form
@@ -43,7 +61,11 @@ def register_user(request):
     return render(request, 'accounts/registerUser.html', context)
 
 def register_vendor(request):
-    if request.method == 'POST':
+    if request.user.is_authenticated:
+        messages.warning(request, 'You are already logged in!')
+
+        return redirect('dashboard')
+    elif request.method == 'POST':
         form = UserForm(request.POST)
         v_form = VendorForm(request.POST, request.FILES)
 
@@ -79,3 +101,48 @@ def register_vendor(request):
     }
 
     return render(request, 'accounts/registerVendor.html', context)
+
+def login(request):
+    if request.user.is_authenticated:
+        messages.warning(request, 'You are already logged in!')
+
+        return redirect('myAccount')
+    elif request.method == 'POST':
+        email = request.POST['email']
+        password = request.POST['password']
+
+        user = auth.authenticate(email=email, password=password)
+        if user is not None:
+            auth.login(request, user)
+            messages.success(request, 'You are now logged in.')
+
+            return redirect('myAccount')
+        else:
+            messages.error(request, 'Invalid logged credentials.')
+
+            return redirect('login')
+
+    return render(request, 'accounts/login.html')
+
+def logout(request):
+    auth.logout(request)
+    messages.info(request, 'You are logged out.')
+
+    return redirect('login')
+
+@login_required(login_url='login')
+def my_account(request):
+    user = request.user
+    redirectUrl = detect_user(user)
+
+    return redirect(redirectUrl)
+
+@login_required(login_url='login')
+@user_passes_test(check_role_customer)
+def customer_dashboard(request):
+    return render(request, 'accounts/customerDashboard.html')
+
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor) # Mục tiêu của decorator này là đảm bảo rằng chỉ có các nhà cung cấp (vendors) mới được phép truy cập vào trang vendor_dashboard.
+def vendor_dashboard(request):
+    return render(request, 'accounts/vendorDashboard.html')
