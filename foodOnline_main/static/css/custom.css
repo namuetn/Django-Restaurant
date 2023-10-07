@@ -1,14 +1,14 @@
-@keyframes show-toast {
-    0% {bottom: -100%}
-    20% {bottom: 100%}
-    80% {bottom: 100%}
-    100% {bottom: -100%}
+@keyframes show-toast-top-right {
+    0% {top: -100%}
+    20% {top: 20%}
+    80% {top: 20%}
+    100% {top: -100%}
 }
 
 .show-notification {
     position: fixed;
-    bottom: 100%;
-    right: 20px;
-    animation-name: show-toast;
-    animation-duration: 5s;
+    top: 0;
+    right: 0;
+    animation-name: show-toast-top-right;
+    animation-duration: 4s;
 }

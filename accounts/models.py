@@ -87,6 +87,14 @@ class User(AbstractBaseUser):
     def has_module_perms(self, app_label):
         return True
 
+    def get_role(self):
+        user_role = ''
+        if self.role == User.CUSTOMER:
+            user_role = 'Customer'
+        elif self.role == User.VENDOR:
+            user_role = 'Vendor'
+
+        return user_role
 
 class UserProfile(models.Model):
     # on_delete=models.CASCADE: khi xoa user thi user_profile cung xoa
