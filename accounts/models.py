@@ -48,10 +48,10 @@ class UserManager(BaseUserManager):
 # AbtractUser se chi cho phep ban add them cac field thoi
 class User(AbstractBaseUser):
     # CONSTANT
-    RESTAURANT = 1
+    VENDOR = 1
     CUSTOMER = 2
     ROLE_CHOICE = (
-        (RESTAURANT, 'Restaurant'),
+        (VENDOR, 'Vendor'),
         (CUSTOMER, 'Customer'),
     )
 
