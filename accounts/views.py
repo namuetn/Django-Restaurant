@@ -1,11 +1,14 @@
-from django.shortcuts import render, redirect
 from accounts.forms import UserForm
 from accounts.models import User, UserProfile
+from accounts.utils import detect_user, send_verification_email
 from django.contrib import messages, auth
 from django.contrib.auth.decorators import login_required, user_passes_test
-from accounts.utils import detect_user
-from vendor.forms import VendorForm
+from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import PermissionDenied
+from django.db import transaction
+from django.utils.http import urlsafe_base64_decode
+from django.shortcuts import render, redirect
+from vendor.forms import VendorForm
 
 # Retrict the vendor from accessing the customer page
 def check_role_vendor(user):
@@ -19,6 +22,7 @@ def check_role_customer(user):
         return True
     raise PermissionDenied
 
+@transaction.atomic
 def register_user(request):
     if request.user.is_authenticated:
         messages.warning(request, 'You are already logged in!')
@@ -27,16 +31,6 @@ def register_user(request):
     elif request.method == 'POST':
         form = UserForm(request.POST)
         if form.is_valid():
-            # -- start create user using form
-            password = form.cleaned_data['password']
-            # tham so commit cho phep ban thuc hien save() va luu vao co so du lieu ngay lap tuc commit=true, hay muon thuc hien thay doi cac doi tuong roi moi luu commit=False
-            # user = form.save(commit=False)
-            # user.set_password(password)
-            # user.role = User.CUSTOMER
-            # user.save()
-            # -- end create user using form
-
-            # -- start create data using create_user method
             user = User.objects.create_user(
                 first_name = form.cleaned_data['first_name'],
                 last_name = form.cleaned_data['last_name'],
@@ -46,6 +40,11 @@ def register_user(request):
             )
             user.role = User.CUSTOMER
             user.save()
+
+            # Send verification email
+            mail_subject = 'Please activate your account'
+            email_template = 'accounts/emails/account_verification_email.html'
+            send_verification_email(request, user, mail_subject, email_template)
 
             messages.success(request, 'Your account has been registered successfully!')
 
@@ -60,6 +59,7 @@ def register_user(request):
 
     return render(request, 'accounts/registerUser.html', context)
 
+@transaction.atomic
 def register_vendor(request):
     if request.user.is_authenticated:
         messages.warning(request, 'You are already logged in!')
@@ -86,6 +86,11 @@ def register_vendor(request):
             vendor.user_profile = user_profile
             vendor.save()
 
+            # Send verification email
+            mail_subject = 'Please activate your account'
+            email_template = 'accounts/emails/account_verification_email.html'
+            send_verification_email(request, user, mail_subject, email_template)
+
             messages.success(request, 'Your account has been registered successfully! Please wait for the approval')
 
             return redirect('registerVendor')
@@ -101,6 +106,24 @@ def register_vendor(request):
     }
 
     return render(request, 'accounts/registerVendor.html', context)
+
+def activate(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User._default_manager.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, 'Congratulation! Your account is activated.')
+
+        return redirect('myAccount')
+    else:
+        messages.error(request, 'Invalid activation link')
+
+        return redirect('myAccount')
 
 def login(request):
     if request.user.is_authenticated:
@@ -146,3 +169,61 @@ def customer_dashboard(request):
 @user_passes_test(check_role_vendor) # Mục tiêu của decorator này là đảm bảo rằng chỉ có các nhà cung cấp (vendors) mới được phép truy cập vào trang vendor_dashboard.
 def vendor_dashboard(request):
     return render(request, 'accounts/vendorDashboard.html')
+
+def forgot_password(request):
+    if request.method == 'POST':
+        email = request.POST['email']
+
+        if User.objects.filter(email=email).exists():
+            user = User.objects.get(email__exact=email)
+            mail_subject = 'Reset your password'
+            email_template = 'accounts/emails/reset_password_email.html'
+            send_verification_email(request, user, mail_subject, email_template)
+            messages.success(request, 'Password reset link has been sent to your email address.')
+
+            return redirect('login')
+        else:
+            messages.error(request, 'Account does not exist.')
+
+            return redirect('forgotPassword')
+    return render(request, 'accounts/forgotPassword.html')
+
+def reset_password_validate(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User._default_manager.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        request.session['uid'] = uid
+        messages.info(request, 'Please reset your password')
+
+        return redirect('resetPassword')
+    else:
+        messages.error(request, 'This link has been expired!')
+
+        return redirect('myAccount')
+
+@transaction.atomic
+def reset_password(request):
+    if request.method == 'POST':
+        password = request.POST['password']
+        confirm_password = request.POST['confirm_password']
+
+        if password == confirm_password:
+            pk = request.session.get('uid')
+            user = User.objects.get(pk=pk)
+            user.set_password(password)
+            user.is_active = True
+            
+            user.save()
+
+            messages.success(request, 'Password reset successful')
+
+            return redirect('login')
+        else:
+            messages.error(request, 'Password do not match!')
+
+            return redirect('resetPassword')
+    return render(request, 'accounts/resetPassword.html')
