@@ -9,6 +9,8 @@ from django.db import transaction
 from django.utils.http import urlsafe_base64_decode
 from django.shortcuts import render, redirect
 from vendor.forms import VendorForm
+from vendor.models import Vendor
+
 
 # Retrict the vendor from accessing the customer page
 def check_role_vendor(user):
