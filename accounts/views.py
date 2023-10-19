@@ -1,15 +1,16 @@
 from accounts.forms import UserForm
 from accounts.models import User, UserProfile
 from accounts.utils import detect_user, send_verification_email
+
 from django.contrib import messages, auth
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.utils.http import urlsafe_base64_decode
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect\
+
 from vendor.forms import VendorForm
-from vendor.models import Vendor
 
 
 # Retrict the vendor from accessing the customer page
