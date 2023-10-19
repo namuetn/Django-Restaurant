@@ -113,5 +113,8 @@ class UserProfile(models.Model):
     created_date = models.DateTimeField(auto_now_add=True) # thiet lap thoi gian khi tao doi tuong va khong thay doi khi cap nhap
     modified_date = models.DateTimeField(auto_now=True)    # thiet lap thoi gian khi tao doi tuong va thay doi khi cap nhap
 
+    def full_address(self):
+        return f'{ self.address_line_1 }, { self.address_line_2 }'
+
     def __str__(self) -> str:
         return self.user.email
