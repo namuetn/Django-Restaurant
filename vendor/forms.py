@@ -10,6 +10,7 @@ class VendorForm(forms.ModelForm):
         widget=forms.FileInput(attrs={'class': 'btn btn-info'}),
         validators=[allow_only_validator]  # Đặt validators ở đây
     )
+
     class Meta:
         model = Vendor
         fields = ['vendor_name', 'vendor_license']
