@@ -8,7 +8,7 @@ from vendor.models import Vendor
 class VendorForm(forms.ModelForm):
     vendor_license = forms.FileField(
         widget=forms.FileInput(attrs={'class': 'btn btn-info'}),
-        validators=[allow_only_validator]  # Đặt validators ở đây
+        validators=[allow_only_validator]
     )
 
     class Meta:
