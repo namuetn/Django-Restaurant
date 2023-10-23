@@ -3,7 +3,7 @@
         {% if vendor.user_profile.cover_photo %}
             {{ vendor.user_profile.cover_photo.url }}
         {% else %}
-            {% static "extra-images/listing-logo18.png" %}
+            {% static "extra-images/blogs-food-bakery-02-180x135.png" %}
         {% endif %}
     ) no-repeat scroll 0 0 / cover;">
     <!-- Container Start -->
@@ -16,7 +16,7 @@
                     <div class="company-info">
                         <div class="img-holder">
                             <figure>
-                                {% if vendor.user_profile.profile_picture.url %}
+                                {% if vendor.user_profile.profile_picture %}
                                     <img src="{{ vendor.user_profile.profile_picture.url }}" alt="">
                                 {% else %}
                                     <img src="{% static "extra-images/listing-logo18.png" %}" alt="Default Image">
