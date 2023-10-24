@@ -9,4 +9,5 @@ urlpatterns = [
     # Add to cart
     path('add-to-cart/<int:food_id>/', views.add_to_cart, name='addToCart'),
     path('decrease-cart/<int:food_id>/', views.decrease_cart, name='decreaseCart'),
+    path('delete-cart/<int:cart_id>/', views.delete_cart, name='deleteCart'),
 ]
