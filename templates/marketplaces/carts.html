@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="main-section pt-5">
+    <div class="page-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
+                    <div class="tabs-holder horizontal">
+                        <ul class="stickynav-tabs nav nav-tabs">
+                            <li class="active"><a data-toggle="tab" href="#home"><i class="fa fa-shopping-cart text-danger"></i>Cart Items</a></li>
+                        </ul>
+                        <div class="tab-content">
+                            <div id="home" class="tab-pane in active">
+                                <div class="menu-itam-holder">
+                                    <div id="menu-item-list-6272" class="menu-itam-list">
+                                        <div class="text-center p-5 d-none" id="empty-cart">
+                                            <h3>Cart is empty</h3>
+                                        </div>
+                                        {% if carts %}
+                                        <ul>
+                                            {% for cart in carts %}
+                                            <li id="cart-item-{{ cart.id }}">
+                                                <div class="image-holder"><img src="{{ cart.fooditem.image.url }}" alt=""></div>
+                                                <div class="text-holder">
+                                                    <h6>{{ cart.fooditem }}</h6>
+                                                    <span>{{ cart.fooditem.description }}</span>
+                                                    <a href="{% url 'vendorDetail' cart.fooditem.vendor.vendor_slug %}" class="badge badge-warning">{{ cart.fooditem.vendor }}</a>
+                                                </div>
+                                                <div class="price-holder">
+                                                    <span class="price">${{ cart.fooditem.price }}</span>
+                                                    <a href="#" class="decrease-cart" data-id="{{ cart.fooditem.id }}" id="{{ cart.id }}" data-url="{% url 'decreaseCart' cart.fooditem.id %}" style="margin-right: 28px;"><i class="icon-minus text-color"></i></a>
+                                                    <label id="qty-{{ cart.fooditem.id }}">0</label>
+                                                    <a href="#" class="add-to-cart" data-id="{{ cart.fooditem.id }}" data-url="{% url 'addToCart' cart.fooditem.id %}"><i class="icon-plus4 text-color"></i></a>
+                                                    <a href="#" class="delete-cart" data-id="{{ cart.id }}" data-url="{% url 'deleteCart' cart.id %}"><i class="icon-delete text-color"></i></a>
+                                                </div>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                        {% else %}
+                                        <div class="text-center p-5">
+                                            <h3>Cart is empty</h3>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    {% for cart in carts %}
+                                    <span id="qty-{{ cart.fooditem.id }}" class="cart-qty d-none" data-qty="{{ cart.quantity }}">
+                                        {{ cart.quantity }}
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                    <div class="tabs-holder horizontal">
+                        <ul class="stickynav-tabs nav nav-tabs">
+                            <li class="active"><a data-toggle="tab" href="#home"><i class="icon- icon-room_service"></i>Your Order</a></li>
+                        </ul>
+                        <div class="tab-content">
+                            <div id="home" class="tab-pane in active">
+                                <div class="menu-itam-holder">
+                                    <div>
+                                        <ul>
+                                            <li style="list-style-type: none;">
+                                                Subtotal
+                                                <span class="price float-right">
+                                                    <span class="currency">$</span>
+                                                    <span id="subtotal">{{ subtotal }}</span>
+                                                </span>
+                                            </li>
+                                            <li style="list-style-type: none;">
+                                                Tax
+                                                <span class="price float-right">
+                                                    <span class="currency">$</span>
+                                                    <span id="tax">{{ tax }}</span>
+                                                </span>
+                                            </li>
+                                            <li style="list-style-type: none; font-weight: 600;">
+                                                TOTAL
+                                                <span class="price float-right">
+                                                    <span class="currency">$</span>
+                                                    <span id="total">{{ grand_total }}</span>
+                                                </span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
