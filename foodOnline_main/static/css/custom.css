@@ -19,3 +19,7 @@
     cursor: pointer;
     z-index: 1;
 }
+
+.main-search.fancy .field-holder input[type="text"] {
+    color: #000000 !important;
+}
