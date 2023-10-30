@@ -5,25 +5,23 @@ from vendor.models import Vendor
 
 class Category(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)
-    category_name = models.CharField(max_length=50, unique=True, error_messages={
-        'unique': 'Category name already exist.'
-    })
+    category_name = models.CharField(max_length=50)
     slug = models.SlugField(max_length=100, unique=True)
     description = models.TextField(max_length=250, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     '''
-        verbose_name: Thuộc tính này được sử dụng để đặt tên biểu đồ cho mô hình của bạn trong trường hợp đơn. 
+        verbose_name: Thuộc tính này được sử dụng để đặt tên biểu đồ cho mô hình của bạn trong trường hợp đơn.
         Ví dụ, nếu bạn có một mô hình có tên "Category", việc đặt verbose_name thành "category" sẽ khiến biểu đồ hiển thị "Category" khi đề cập đến mô hình này.
 
-        verbose_name_plural: Thuộc tính này được sử dụng để đặt tên biểu đồ cho mô hình của bạn trong trường hợp số nhiều. 
+        verbose_name_plural: Thuộc tính này được sử dụng để đặt tên biểu đồ cho mô hình của bạn trong trường hợp số nhiều.
         Ví dụ, nếu bạn đặt verbose_name_plural thành "categories", thì biểu đồ sẽ hiển thị "Categories" khi đề cập đến nhiều thể hiện của mô hình "Category".
     '''
     class Meta:
         verbose_name = 'category'
         verbose_name_plural = 'categories'
-    
+
     def clean(self) -> None:
         self.category_name = self.category_name.capitalize()
 

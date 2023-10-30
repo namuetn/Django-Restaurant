@@ -59,7 +59,7 @@ def menu_builder(request):
     vendor = get_vendor(request)
     categories = Category.objects.filter(vendor=vendor).order_by('created_at')
     context = {
-        'categories': categories, 
+        'categories': categories,
     }
 
     return render(request, 'vendors/menuBuilder.html', context)
@@ -86,8 +86,9 @@ def add_category(request):
             category_name = form.cleaned_data['category_name']
             category = form.save(commit=False)
             category.vendor = get_vendor(request)
-            category.slug = slugify(category_name)
-            form.save()
+            category.save()
+            category.slug = slugify(category_name) + '-' + str(category.id)
+            category.save()
             messages.success(request, 'Category added successfully!')
 
             return redirect('menuBuilder')

@@ -1,7 +1,7 @@
 from menu.models import Category, FoodItem
 
 from django.contrib.auth.decorators import login_required
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404
 
@@ -114,3 +114,21 @@ def delete_cart(request, cart_id):
                 return JsonResponse({'status': 'Failed', 'message': 'Cart item does not exist'})
         else:
             return JsonResponse({'status': 'Failed', 'message': 'Invalid request!'})
+
+def search(request):
+    address = request.GET['address']
+    latitude = request.GET['lat']
+    longitude = request.GET['lng']
+    radius = request.GET['radius']
+    keyword = request.GET['keyword']
+
+    # Kết quả cuối cùng của đoạn mã này là danh sách (list) của các giá trị duy nhất trong trường vendor của các bản ghi FoodItem thỏa mãn các điều kiện được đặt ra.
+    fetch_vendors_by_fooditems = FoodItem.objects.filter(food_title__icontains=keyword, is_available=True).values_list('vendor', flat=True)
+    vendors = Vendor.objects.filter(Q(id__in=fetch_vendors_by_fooditems) | Q(vendor_name__icontains=keyword, is_approval=True, user__is_active=True))
+
+    context = {
+        'vendors': vendors,
+        'vendors_count': vendors.count(),
+    }
+
+    return render(request, 'marketplaces/listings.html', context)
